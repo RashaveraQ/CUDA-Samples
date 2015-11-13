@@ -13,6 +13,7 @@
 // OpenGL Graphics includes
 #include <GL/glew.h>
 #if defined (__APPLE__) || defined(MACOSX)
+  #pragma clang diagnostic ignored "-Wdeprecated-declarations"
   #include <GLUT/glut.h>
   #ifndef glutCloseFunc
   #define glutCloseFunc glutWMCloseFunc
@@ -41,11 +42,11 @@
 
 ////////////////////////////////////////////////////////////////////////////////
 // constants
-extern const unsigned int window_width;
-extern const unsigned int window_height;
+const unsigned int window_width  = 512;
+const unsigned int window_height = 512;
 
-extern const unsigned int mesh_width;
-extern const unsigned int mesh_height;
+const unsigned int mesh_width    = 256;
+const unsigned int mesh_height   = 256;
 
 extern float4 *h_vec;
 extern float4 *d_vec;
@@ -57,31 +58,31 @@ extern GLfloat gkLightPos[4];
 extern GLfloat gkLightPos2[4];
 
 // vbo variables
-extern GLuint vbo;
-extern struct cudaGraphicsResource *cuda_vbo_resource;
-extern void *d_vbo_buffer;
+GLuint vbo;
+struct cudaGraphicsResource *cuda_vbo_resource;
+void *d_vbo_buffer = NULL;
 
-extern float g_fAnim;
+float g_fAnim = 0.0;
 
 // mouse controls
-extern int mouse_old_x, mouse_old_y;
-extern int mouse_buttons;
-extern float rotate_x, rotate_y;
-extern float translate_z;
+int mouse_old_x, mouse_old_y;
+int mouse_buttons = 0;
+float rotate_x = 0.0, rotate_y = 0.0;
+float translate_z = -3.0;
 
-extern StopWatchInterface *timer;
+StopWatchInterface *timer = NULL;
 
 // Auto-Verification Code
-extern int fpsCount;        // FPS count for averaging
-extern int fpsLimit;        // FPS limit for sampling
-extern int g_Index;
-extern float avgFPS;
-extern unsigned int frameCount;
-extern unsigned int g_TotalErrors;
-extern bool g_bQAReadback;
+int fpsCount = 0;        // FPS count for averaging
+int fpsLimit = 1;        // FPS limit for sampling
+int g_Index = 0;
+float avgFPS = 0.0f;
+unsigned int frameCount = 0;
+unsigned int g_TotalErrors = 0;
+bool g_bQAReadback = false;
 
-extern int *pArgc;
-extern char **pArgv;
+int *pArgc = NULL;
+char **pArgv = NULL;
 
 #define MAX(a,b) ((a > b) ? a : b)
 
@@ -100,7 +101,8 @@ void cleanup();
 
 // GL functionality
 bool initGL(int *argc, char **argv);
-void createVBO(GLuint *vbo, struct cudaGraphicsResource **vbo_res, unsigned int vbo_res_flags);
+void createVBO(GLuint *vbo, struct cudaGraphicsResource **vbo_res,
+               unsigned int vbo_res_flags);
 void deleteVBO(GLuint *vbo, struct cudaGraphicsResource *vbo_res);
 
 // rendering callbacks

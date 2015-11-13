@@ -25,107 +25,11 @@
     Host code
 */
 
-// includes, system
-#include <stdlib.h>
-#include <stdio.h>
-#include <string.h>
-#include <math.h>
-
-#ifdef _WIN32
-#  define WINDOWS_LEAN_AND_MEAN
-#  define NOMINMAX
-#  include <windows.h>
-#endif
-
-// OpenGL Graphics includes
-#include <GL/glew.h>
-#if defined (__APPLE__) || defined(MACOSX)
-  #pragma clang diagnostic ignored "-Wdeprecated-declarations"
-  #include <GLUT/glut.h>
-  #ifndef glutCloseFunc
-  #define glutCloseFunc glutWMCloseFunc
-  #endif
-#else
-#include <GL/freeglut.h>
-#endif
-
-// includes, cuda
-#include <cuda_runtime.h>
-#include <cuda_gl_interop.h>
-
-// Utilities and timing functions
-#include <helper_functions.h>    // includes cuda.h and cuda_runtime_api.h
+#include "SolarWind.h"
 #include <timer.h>               // timing functions
 
-// CUDA helper functions
-#include <helper_cuda.h>         // helper functions for CUDA error check
-#include <helper_cuda_gl.h>      // helper functions for CUDA/GL interop
+#define DEPTH 8
 
-#include <vector_types.h>
-
-#define MAX_EPSILON_ERROR 10.0f
-#define THRESHOLD          0.30f
-#define REFRESH_DELAY     10 //ms
-
-////////////////////////////////////////////////////////////////////////////////
-// constants
-const unsigned int window_width  = 512;
-const unsigned int window_height = 512;
-
-const unsigned int mesh_width    = 256;
-const unsigned int mesh_height   = 256;
-
-// vbo variables
-GLuint vbo;
-struct cudaGraphicsResource *cuda_vbo_resource;
-void *d_vbo_buffer = NULL;
-
-float g_fAnim = 0.0;
-
-// mouse controls
-int mouse_old_x, mouse_old_y;
-int mouse_buttons = 0;
-float rotate_x = 0.0, rotate_y = 0.0;
-float translate_z = -3.0;
-
-StopWatchInterface *timer = NULL;
-
-// Auto-Verification Code
-int fpsCount = 0;        // FPS count for averaging
-int fpsLimit = 1;        // FPS limit for sampling
-int g_Index = 0;
-float avgFPS = 0.0f;
-unsigned int frameCount = 0;
-unsigned int g_TotalErrors = 0;
-bool g_bQAReadback = false;
-
-int *pArgc = NULL;
-char **pArgv = NULL;
-
-#define MAX(a,b) ((a > b) ? a : b)
-
-////////////////////////////////////////////////////////////////////////////////
-// declaration, forward
-bool runTest(int argc, char **argv, char *ref_file);
-void cleanup();
-
-// GL functionality
-bool initGL(int *argc, char **argv);
-void createVBO(GLuint *vbo, struct cudaGraphicsResource **vbo_res,
-               unsigned int vbo_res_flags);
-void deleteVBO(GLuint *vbo, struct cudaGraphicsResource *vbo_res);
-
-// rendering callbacks
-void display();
-void keyboard(unsigned char key, int x, int y);
-void mouse(int button, int state, int x, int y);
-void motion(int x, int y);
-void timerEvent(int value);
-
-// Cuda functionality
-void runCuda(struct cudaGraphicsResource **vbo_resource);
-void runAutoTest(int devID, char **argv, char *ref_file);
-void checkResultCuda(int argc, char **argv, const GLuint &vbo);
 
 const char *sSDKsample = "simpleGL (VBO)";
 
@@ -133,16 +37,16 @@ const char *sSDKsample = "simpleGL (VBO)";
 //! Simple kernel to modify vertex positions in sine wave pattern
 //! @param data  data in global memory
 ///////////////////////////////////////////////////////////////////////////////
-__global__ void simple_vbo_kernel(float4 *pos, unsigned int width, unsigned int height, float time)
+__global__ void simple_vbo_kernel(float4 *pos, float4* vec, float3* pAxis, unsigned int width, unsigned int height, float time)
 {
-    unsigned int x = blockIdx.x*blockDim.x + threadIdx.x;
-    unsigned int y = blockIdx.y*blockDim.y + threadIdx.y;
+    unsigned int x = blockIdx.x * blockDim.x + threadIdx.x;
+    unsigned int y = blockIdx.y * blockDim.y + threadIdx.y;
 
     // calculate uv coordinates
-    float u = x / (float) width;
-    float v = y / (float) height;
-    u = u*2.0f - 1.0f;
-    v = v*2.0f - 1.0f;
+    float u = (x / DEPTH) / (float) (width / DEPTH);
+    float v = (y / DEPTH) / (float) (height / DEPTH);
+    u = u * 2.0f - 1.0f;
+    v = v * 2.0f - 1.0f;
 
     // calculate simple sine wave pattern
     //float freq = 4.0f;
@@ -150,9 +54,8 @@ __global__ void simple_vbo_kernel(float4 *pos, unsigned int width, unsigned int 
 	float4 p = pos[y * width + x];
 	float4 V = vec[y * width + x];
 
-	float3 a = make_float3(0.0003f, 0.002f, 0.001f);
-	float3 n = make_float3(p.x - a.x, p.y - a.y, p.z - a.z);
-	float3 s = make_float3(p.x + a.x, p.y + a.y, p.z + a.z);
+	float3 n = make_float3(p.x - pAxis->x, p.y - pAxis->y, p.z - pAxis->z);
+	float3 s = make_float3(p.x + pAxis->x, p.y + pAxis->y, p.z + pAxis->z);
 	float  n2 = sqrtf(n.x * n.x + n.y * n.y + n.z * n.z);
 	float  s2 = sqrtf(s.x * s.x + s.y * s.y + s.z * s.z);
 	float  n3 = n2 * n2 * n2;
@@ -186,14 +89,12 @@ __global__ void simple_vbo_kernel(float4 *pos, unsigned int width, unsigned int 
 	}
 }
 
-
-void launch_kernel(float4 *pos, unsigned int mesh_width,
-                   unsigned int mesh_height, float time)
+void launch_kernel(float4 *pos, unsigned int mesh_width, unsigned int mesh_height, float time)
 {
     // execute the kernel
     dim3 block(8, 8, 1);
     dim3 grid(mesh_width / block.x, mesh_height / block.y, 1);
-    simple_vbo_kernel<<< grid, block>>>(pos, mesh_width, mesh_height, time);
+    simple_vbo_kernel<<< grid, block>>>(pos, d_vec, d_axis, mesh_width, mesh_height, time);
 }
 
 bool checkHW(char *name, const char *gpuType, int dev)
@@ -267,6 +168,33 @@ int findGraphicsGPU(char *name)
     return nGraphicsGPU;
 }
 
+void reset()
+{
+	int N = mesh_width * mesh_height;
+	size_t size = N * sizeof(float4);
+	cudaMemcpy(d_vec, h_vec, size, cudaMemcpyHostToDevice);
+}
+
+void setAxis(float x, float y, float z)
+{
+	h_axis = make_float3(x, y, z);
+	h_axis_radius = sqrtf(h_axis.x * h_axis.x + h_axis.y * h_axis.y + h_axis.z * h_axis.z);
+
+	gkLightPos[0] = h_axis.x;
+	gkLightPos[1] = h_axis.y;
+	gkLightPos[2] = h_axis.z;
+	gkLightPos[3] = 0;
+
+	gkLightPos2[0] = -h_axis.x;
+	gkLightPos2[1] = -h_axis.y;
+	gkLightPos2[2] = -h_axis.z;
+	gkLightPos2[3] = 0;
+
+	size_t size = sizeof(float3);
+	cudaMalloc(&d_axis, size);
+	cudaMemcpy(d_axis, &h_axis, size, cudaMemcpyHostToDevice);
+}
+
 ////////////////////////////////////////////////////////////////////////////////
 // Program main
 ////////////////////////////////////////////////////////////////////////////////
@@ -294,7 +222,29 @@ int main(int argc, char **argv)
 
     printf("\n");
 
+	int N = mesh_width * mesh_height;
+	size_t size = N * sizeof(float4);
+	h_vec = (float4*)malloc(size);
+	for (int i = 0; i < N; i++) {
+		h_vec[i] = make_float4(0.0f, 0.01f, 0.0f, 200.0f);
+	}
+	cudaMalloc(&d_vec, size);
+
+	setAxis(0.0, 0.001f, 0.0);
+
+	reset();
+
     runTest(argc, argv, ref_file);
+
+    // cudaDeviceReset causes the driver to clean up all state. While
+    // not mandatory in normal operation, it is good practice.  It is also
+    // needed to ensure correct operation when the application is being
+    // profiled. Calling cudaDeviceReset causes all profile data to be
+    // flushed before the application exits
+    cudaDeviceReset();
+
+	cudaFree(d_vec);
+	free(h_vec);
 
     printf("%s completed, returned %s\n", sSDKsample, (g_TotalErrors == 0) ? "OK" : "ERROR!");
     exit(g_TotalErrors == 0 ? EXIT_SUCCESS : EXIT_FAILURE);
@@ -359,7 +309,6 @@ bool initGL(int *argc, char **argv)
 
     return true;
 }
-
 
 ////////////////////////////////////////////////////////////////////////////////
 //! Run a simple test for CUDA
@@ -435,6 +384,7 @@ bool runTest(int argc, char **argv, char *ref_file)
 
         // start rendering mainloop
         glutMainLoop();
+
     }
 
     return true;
@@ -449,8 +399,7 @@ void runCuda(struct cudaGraphicsResource **vbo_resource)
     float4 *dptr;
     checkCudaErrors(cudaGraphicsMapResources(1, vbo_resource, 0));
     size_t num_bytes;
-    checkCudaErrors(cudaGraphicsResourceGetMappedPointer((void **)&dptr, &num_bytes,
-                                                         *vbo_resource));
+    checkCudaErrors(cudaGraphicsResourceGetMappedPointer((void **)&dptr, &num_bytes, *vbo_resource));
     //printf("CUDA mapped VBO: May access %ld bytes\n", num_bytes);
 
     // execute the kernel
@@ -622,12 +571,36 @@ void keyboard(unsigned char key, int /*x*/, int /*y*/)
     switch (key)
     {
         case (27) :
-            #if defined(__APPLE__) || defined(MACOSX)
-                exit(EXIT_SUCCESS);
-            #else
-                glutDestroyWindow(glutGetWindow());
-                return;
-            #endif
+            exit(EXIT_SUCCESS);
+            break;
+
+		case 'x':
+			setAxis(0.001f, 0.0, 0.0);
+			break;
+
+		case 'X':
+			setAxis(-0.001f, 0.0, 0.0);
+			break;
+
+		case 'y':
+			setAxis(0.0, 0.001f, 0.0);
+			break;
+
+		case 'Y':
+			setAxis(0.0, -0.001f, 0.0);
+			break;
+
+		case 'z':
+			setAxis(0.0, 0.0, 0.001f);
+			break;
+
+		case 'Z':
+			setAxis(0.0, 0.0, -0.001f);
+			break;
+
+		case 'r':
+			reset();
+			break;
     }
 }
 
@@ -655,15 +628,39 @@ void motion(int x, int y)
     dx = (float)(x - mouse_old_x);
     dy = (float)(y - mouse_old_y);
 
-    if (mouse_buttons & 1)
-    {
-        rotate_x += dy * 0.2f;
-        rotate_y += dx * 0.2f;
-    }
-    else if (mouse_buttons & 4)
-    {
-        translate_z += dy * 0.01f;
-    }
+	switch (glutGetModifiers()) {
+	default:
+		if (mouse_buttons & 1)
+		{
+			rotate_x += dy * 0.2f;
+			rotate_y += dx * 0.2f;
+		}
+		else if (mouse_buttons & 4)
+		{
+			translate_z += dy * 0.01f;
+		}
+		break;
+
+	case GLUT_ACTIVE_CTRL:
+		if (mouse_buttons & 1)
+		{
+			float th  = 0.01f * dx;
+			float phy = 0.01f * dy;
+			float sin_th = sin(th);
+			float cos_th = cos(th);
+			float sin_phy = sin(phy);
+			float cos_phy = cos(phy);
+			setAxis(cos_th * h_axis.x - sin_th * cos_phy * h_axis.y + sin_th * sin_phy * h_axis.z, 
+			        sin_th * h_axis.x + cos_th * cos_phy * h_axis.y - cos_th * sin_phy * h_axis.z,
+					                             sin_phy * h_axis.y +          cos_phy * h_axis.z );
+		}
+		else if (mouse_buttons & 4)
+		{
+			float r = (dy > 0) ? 1.05f : 0.95f;
+			setAxis(r * h_axis.x, r * h_axis.y, r * h_axis.z);
+		}
+		break;
+	}
 
     mouse_old_x = x;
     mouse_old_y = y;
