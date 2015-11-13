@@ -42,11 +42,11 @@
 
 ////////////////////////////////////////////////////////////////////////////////
 // constants
-const unsigned int window_width  = 512;
-const unsigned int window_height = 512;
+extern const unsigned int window_width;
+extern const unsigned int window_height;
 
-const unsigned int mesh_width    = 256;
-const unsigned int mesh_height   = 256;
+extern const unsigned int mesh_width;
+extern const unsigned int mesh_height;
 
 extern float4 *h_vec;
 extern float4 *d_vec;
@@ -58,31 +58,31 @@ extern GLfloat gkLightPos[4];
 extern GLfloat gkLightPos2[4];
 
 // vbo variables
-GLuint vbo;
-struct cudaGraphicsResource *cuda_vbo_resource;
-void *d_vbo_buffer = NULL;
+extern GLuint vbo;
+extern struct cudaGraphicsResource *cuda_vbo_resource;
+extern void *d_vbo_buffer;
 
-float g_fAnim = 0.0;
+extern float g_fAnim;
 
 // mouse controls
-int mouse_old_x, mouse_old_y;
-int mouse_buttons = 0;
-float rotate_x = 0.0, rotate_y = 0.0;
-float translate_z = -3.0;
+extern int mouse_old_x, mouse_old_y;
+extern int mouse_buttons;
+extern float rotate_x, rotate_y;
+extern float translate_z;
 
-StopWatchInterface *timer = NULL;
+extern StopWatchInterface *timer;
 
 // Auto-Verification Code
-int fpsCount = 0;        // FPS count for averaging
-int fpsLimit = 1;        // FPS limit for sampling
-int g_Index = 0;
-float avgFPS = 0.0f;
-unsigned int frameCount = 0;
-unsigned int g_TotalErrors = 0;
-bool g_bQAReadback = false;
+extern int fpsCount;        // FPS count for averaging
+extern int fpsLimit;        // FPS limit for sampling
+extern int g_Index;
+extern float avgFPS;
+extern unsigned int frameCount;
+extern unsigned int g_TotalErrors;
+extern bool g_bQAReadback;
 
-int *pArgc = NULL;
-char **pArgv = NULL;
+extern int *pArgc;
+extern char **pArgv;
 
 #define MAX(a,b) ((a > b) ? a : b)
 
@@ -101,8 +101,7 @@ void cleanup();
 
 // GL functionality
 bool initGL(int *argc, char **argv);
-void createVBO(GLuint *vbo, struct cudaGraphicsResource **vbo_res,
-               unsigned int vbo_res_flags);
+void createVBO(GLuint *vbo, struct cudaGraphicsResource **vbo_res, unsigned int vbo_res_flags);
 void deleteVBO(GLuint *vbo, struct cudaGraphicsResource *vbo_res);
 
 // rendering callbacks
