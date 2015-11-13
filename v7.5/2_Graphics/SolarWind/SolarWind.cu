@@ -30,9 +30,6 @@
 
 #define DEPTH 8
 
-
-//const char *sSDKsample = "simpleGL (VBO)";
-
 ///////////////////////////////////////////////////////////////////////////////
 //! Simple kernel to modify vertex positions in sine wave pattern
 //! @param data  data in global memory

@@ -4,3 +4,4 @@ Debug/
 *.pdb
 *.opensdf
 *.bak
+Release/
