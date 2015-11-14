@@ -14,7 +14,7 @@
     </ProjectConfiguration>
   </ItemGroup>
   <PropertyGroup Label="Globals">
-    <ProjectGuid>{997E0757-EA74-4A4E-A0FC-47D8C8831A15}</ProjectGuid>
+    <ProjectGuid>{BFC1D46B-DF2F-7946-01F2-35E0A08B86ED}</ProjectGuid>
     <RootNamespace>particles_vs2013</RootNamespace>
     <ProjectName>particles</ProjectName>
     <CudaToolkitCustomDir />

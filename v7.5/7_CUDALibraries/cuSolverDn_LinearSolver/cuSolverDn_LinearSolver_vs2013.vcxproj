@@ -14,7 +14,7 @@
     </ProjectConfiguration>
   </ItemGroup>
   <PropertyGroup Label="Globals">
-    <ProjectGuid>{997E0757-EA74-4A4E-A0FC-47D8C8831A15}</ProjectGuid>
+    <ProjectGuid>{B2CF4860-7B64-48C9-AC40-9CFC96C30CE6}</ProjectGuid>
     <RootNamespace>cuSolverDn_LinearSolver_vs2013</RootNamespace>
     <ProjectName>cuSolverDn_LinearSolver</ProjectName>
     <CudaToolkitCustomDir />

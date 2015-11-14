@@ -14,7 +14,7 @@
     </ProjectConfiguration>
   </ItemGroup>
   <PropertyGroup Label="Globals">
-    <ProjectGuid>{997E0757-EA74-4A4E-A0FC-47D8C8831A15}</ProjectGuid>
+    <ProjectGuid>{CD6917A0-759D-48A7-A807-8F732019C787}</ProjectGuid>
     <RootNamespace>simpleHyperQ_vs2013</RootNamespace>
     <ProjectName>simpleHyperQ</ProjectName>
     <CudaToolkitCustomDir />
@@ -98,7 +98,6 @@
   </ItemDefinitionGroup>
   <ItemGroup>
     <CudaCompile Include="simpleHyperQ.cu" />
-
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

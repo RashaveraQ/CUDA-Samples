@@ -14,7 +14,7 @@
     </ProjectConfiguration>
   </ItemGroup>
   <PropertyGroup Label="Globals">
-    <ProjectGuid>{997E0757-EA74-4A4E-A0FC-47D8C8831A15}</ProjectGuid>
+    <ProjectGuid>{9E2C2D78-2361-49F7-A37A-5E59C1757AB1}</ProjectGuid>
     <RootNamespace>simpleOccupancy_vs2013</RootNamespace>
     <ProjectName>simpleOccupancy</ProjectName>
     <CudaToolkitCustomDir />
@@ -98,7 +98,6 @@
   </ItemDefinitionGroup>
   <ItemGroup>
     <CudaCompile Include="simpleOccupancy.cu" />
-
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

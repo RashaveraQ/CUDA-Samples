@@ -14,7 +14,7 @@
     </ProjectConfiguration>
   </ItemGroup>
   <PropertyGroup Label="Globals">
-    <ProjectGuid>{997E0757-EA74-4A4E-A0FC-47D8C8831A15}</ProjectGuid>
+    <ProjectGuid>{94DB06F8-B4E4-F4FA-D7E2-C4F5F7E7C369}</ProjectGuid>
     <RootNamespace>simpleStreams_vs2013</RootNamespace>
     <ProjectName>simpleStreams</ProjectName>
     <CudaToolkitCustomDir />
@@ -98,7 +98,6 @@
   </ItemDefinitionGroup>
   <ItemGroup>
     <CudaCompile Include="simpleStreams.cu" />
-
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

@@ -14,7 +14,7 @@
     </ProjectConfiguration>
   </ItemGroup>
   <PropertyGroup Label="Globals">
-    <ProjectGuid>{997E0757-EA74-4A4E-A0FC-47D8C8831A15}</ProjectGuid>
+    <ProjectGuid>{897D0B44-5609-E764-2F88-95769B502054}</ProjectGuid>
     <RootNamespace>inlinePTX_vs2013</RootNamespace>
     <ProjectName>inlinePTX</ProjectName>
     <CudaToolkitCustomDir />
@@ -98,7 +98,6 @@
   </ItemDefinitionGroup>
   <ItemGroup>
     <CudaCompile Include="inlinePTX.cu" />
-
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

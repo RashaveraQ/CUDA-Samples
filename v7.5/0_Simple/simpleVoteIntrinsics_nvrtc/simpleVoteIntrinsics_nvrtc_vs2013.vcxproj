@@ -14,7 +14,7 @@
     </ProjectConfiguration>
   </ItemGroup>
   <PropertyGroup Label="Globals">
-    <ProjectGuid>{997E0757-EA74-4A4E-A0FC-47D8C8831A15}</ProjectGuid>
+    <ProjectGuid>{ACD94491-A3D3-4A80-85D8-A878F9DDDEE1}</ProjectGuid>
     <RootNamespace>simpleVoteIntrinsics_nvrtc_vs2013</RootNamespace>
     <ProjectName>simpleVoteIntrinsics_nvrtc</ProjectName>
     <CudaToolkitCustomDir />
@@ -62,7 +62,8 @@
       <OutputFile>$(OutDir)/simpleVoteIntrinsics_nvrtc.exe</OutputFile>
     </Link>
     <CudaCompile>
-      <CodeGeneration></CodeGeneration>
+      <CodeGeneration>
+      </CodeGeneration>
       <AdditionalOptions>-Xcompiler "/wd 4819" %(AdditionalOptions)</AdditionalOptions>
       <Include>./;../../common/inc</Include>
       <Defines>WIN32</Defines>

@@ -14,7 +14,7 @@
     </ProjectConfiguration>
   </ItemGroup>
   <PropertyGroup Label="Globals">
-    <ProjectGuid>{997E0757-EA74-4A4E-A0FC-47D8C8831A15}</ProjectGuid>
+    <ProjectGuid>{F451315E-DE59-2C9D-A986-2E469549B810}</ProjectGuid>
     <RootNamespace>simpleTexture3D_vs2013</RootNamespace>
     <ProjectName>simpleTexture3D</ProjectName>
     <CudaToolkitCustomDir />
@@ -109,7 +109,6 @@
   <ItemGroup>
     <ClCompile Include="simpleTexture3D.cpp" />
     <CudaCompile Include="simpleTexture3D_kernel.cu" />
-
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

@@ -14,7 +14,7 @@
     </ProjectConfiguration>
   </ItemGroup>
   <PropertyGroup Label="Globals">
-    <ProjectGuid>{997E0757-EA74-4A4E-A0FC-47D8C8831A15}</ProjectGuid>
+    <ProjectGuid>{6754F09F-192B-31D2-0D6A-B956C16E78F3}</ProjectGuid>
     <RootNamespace>simplePrintf_vs2013</RootNamespace>
     <ProjectName>simplePrintf</ProjectName>
     <CudaToolkitCustomDir />
@@ -98,7 +98,6 @@
   </ItemDefinitionGroup>
   <ItemGroup>
     <CudaCompile Include="simplePrintf.cu" />
-
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

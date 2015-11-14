@@ -14,7 +14,7 @@
     </ProjectConfiguration>
   </ItemGroup>
   <PropertyGroup Label="Globals">
-    <ProjectGuid>{997E0757-EA74-4A4E-A0FC-47D8C8831A15}</ProjectGuid>
+    <ProjectGuid>{D2B0F453-478F-E040-3A4B-2A192F070312}</ProjectGuid>
     <RootNamespace>dwtHaar1D_vs2013</RootNamespace>
     <ProjectName>dwtHaar1D</ProjectName>
     <CudaToolkitCustomDir />

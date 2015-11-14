@@ -14,7 +14,7 @@
     </ProjectConfiguration>
   </ItemGroup>
   <PropertyGroup Label="Globals">
-    <ProjectGuid>{997E0757-EA74-4A4E-A0FC-47D8C8831A15}</ProjectGuid>
+    <ProjectGuid>{2CCC31DE-9743-4A65-8FC8-28DC025198C5}</ProjectGuid>
     <RootNamespace>fluidsGL_vs2013</RootNamespace>
     <ProjectName>fluidsGL</ProjectName>
     <CudaToolkitCustomDir />

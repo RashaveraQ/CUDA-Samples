@@ -14,7 +14,7 @@
     </ProjectConfiguration>
   </ItemGroup>
   <PropertyGroup Label="Globals">
-    <ProjectGuid>{997E0757-EA74-4A4E-A0FC-47D8C8831A15}</ProjectGuid>
+    <ProjectGuid>{4AF69D61-A45F-442F-8CAE-E031F831EB6A}</ProjectGuid>
     <RootNamespace>volumeFiltering_vs2013</RootNamespace>
     <ProjectName>volumeFiltering</ProjectName>
     <CudaToolkitCustomDir />

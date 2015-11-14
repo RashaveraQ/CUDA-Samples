@@ -14,7 +14,7 @@
     </ProjectConfiguration>
   </ItemGroup>
   <PropertyGroup Label="Globals">
-    <ProjectGuid>{997E0757-EA74-4A4E-A0FC-47D8C8831A15}</ProjectGuid>
+    <ProjectGuid>{B60CC566-D121-401A-84FD-CB100A37D7E2}</ProjectGuid>
     <RootNamespace>jpegNPP_vs2013</RootNamespace>
     <ProjectName>jpegNPP</ProjectName>
     <CudaToolkitCustomDir />

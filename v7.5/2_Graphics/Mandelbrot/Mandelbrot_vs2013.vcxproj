@@ -14,7 +14,7 @@
     </ProjectConfiguration>
   </ItemGroup>
   <PropertyGroup Label="Globals">
-    <ProjectGuid>{997E0757-EA74-4A4E-A0FC-47D8C8831A15}</ProjectGuid>
+    <ProjectGuid>{2B9D325F-8161-5CB8-EC5E-EC3CE6487E1D}</ProjectGuid>
     <RootNamespace>Mandelbrot_vs2013</RootNamespace>
     <ProjectName>Mandelbrot</ProjectName>
     <CudaToolkitCustomDir />

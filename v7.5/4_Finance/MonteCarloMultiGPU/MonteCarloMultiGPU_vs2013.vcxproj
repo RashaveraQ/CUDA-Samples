@@ -14,7 +14,7 @@
     </ProjectConfiguration>
   </ItemGroup>
   <PropertyGroup Label="Globals">
-    <ProjectGuid>{997E0757-EA74-4A4E-A0FC-47D8C8831A15}</ProjectGuid>
+    <ProjectGuid>{21A04A25-5834-2633-A04D-9D0DBA5749E9}</ProjectGuid>
     <RootNamespace>MonteCarloMultiGPU_vs2013</RootNamespace>
     <ProjectName>MonteCarloMultiGPU</ProjectName>
     <CudaToolkitCustomDir />
