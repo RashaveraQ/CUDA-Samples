@@ -76,3 +76,16 @@ launch_cudaProcess(dim3 grid, dim3 block, int sbytes,
 {
     cudaProcess<<< grid, block, sbytes >>>(g_odata, imgw, d_dst, d_src, WIDTH, HEIGHT);
 }
+
+__global__ void
+cudaProcess_setPixel(unsigned int *g_odata, int imgw, int x, int y, bool set)
+{
+	uchar4 c4 = set ? make_uchar4(255, 255, 0, 0) : make_uchar4(20, 20, 20, 0);
+	g_odata[y*imgw+x] = rgbToInt(c4.z, c4.y, c4.x);
+}
+
+extern "C" void
+launch_cudaProcess_setPixel(unsigned int *g_odata, int imgw, int x, int y, bool set)
+{
+	cudaProcess_setPixel <<<1, 0 >>>(g_odata, imgw, x, y, set);
+}

@@ -60,14 +60,20 @@ CheckRender *g_CheckRender = NULL;
 
 ////////////////////////////////////////////////////////////////////////////////
 // constants / global variables
-unsigned int window_width = 3840;
-unsigned int window_height = 2160;
-unsigned int image_width = 3840;
-unsigned int image_height = 2160;
+unsigned int window_width = 1000;
+unsigned int window_height = 1000;
+unsigned int image_width = 1000;
+unsigned int image_height = 1000;
 int iGLUTWindowHandle = 0;          // handle to the GLUT window
 
-int*	d_dst[2];
+unsigned int mem_size;
+int* dst;
+int* d_dst[2];
 int k = 0;
+
+// mouse controls
+int mouse_old_x, mouse_old_y;
+int mouse_buttons = 0;
 
 // pbo and fbo variables
 #ifdef USE_TEXSUBIMAGE2D
@@ -120,6 +126,9 @@ extern "C" void
 launch_cudaProcess(dim3 grid, dim3 block, int sbytes,
                    unsigned int *g_odata,
                    int imgw, int *dst, int *src, int WIDTH, int HEIGHT);
+
+extern "C" void
+launch_cudaProcess_setPixel(unsigned int *g_odata, int imgw, int x, int y, bool set);
 
 // Forward declarations
 void runStdProgram(int argc, char **argv);
@@ -224,60 +233,74 @@ static const char *glsl_draw_fragshader_src =
     "}\n";
 #endif
 
+unsigned int *get_out_data()
+{
+	// run the Cuda kernel
+	unsigned int *out_data;
+
+#ifdef USE_TEXSUBIMAGE2D
+	checkCudaErrors(cudaGraphicsMapResources(1, &cuda_pbo_dest_resource, 0));
+	size_t num_bytes;
+	checkCudaErrors(cudaGraphicsResourceGetMappedPointer((void **)&out_data, &num_bytes,
+		cuda_pbo_dest_resource));
+	//printf("CUDA mapped pointer of pbo_out: May access %ld bytes, expected %d\n", num_bytes, size_tex_data);
+#else
+	out_data = cuda_dest_resource;
+#endif
+	return out_data;
+}
+
+void after_cudaProcess()
+{
+	// CUDA generated data in cuda memory or in a mapped PBO made of BGRA 8 bits
+	// 2 solutions, here :
+	// - use glTexSubImage2D(), there is the potential to loose performance in possible hidden conversion
+	// - map the texture and blit the result thanks to CUDA API
+#ifdef USE_TEXSUBIMAGE2D
+	checkCudaErrors(cudaGraphicsUnmapResources(1, &cuda_pbo_dest_resource, 0));
+	glBindBuffer(GL_PIXEL_UNPACK_BUFFER_ARB, pbo_dest);
+
+	glBindTexture(GL_TEXTURE_2D, tex_cudaResult);
+	glTexSubImage2D(GL_TEXTURE_2D, 0, 0, 0,
+		image_width, image_height,
+		GL_RGBA, GL_UNSIGNED_BYTE, NULL);
+	SDK_CHECK_ERROR_GL();
+	glBindBuffer(GL_PIXEL_PACK_BUFFER_ARB, 0);
+	glBindBuffer(GL_PIXEL_UNPACK_BUFFER_ARB, 0);
+#else
+	// We want to copy cuda_dest_resource data to the texture
+	// map buffer objects to get CUDA device pointers
+	cudaArray *texture_ptr;
+	checkCudaErrors(cudaGraphicsMapResources(1, &cuda_tex_result_resource, 0));
+	checkCudaErrors(cudaGraphicsSubResourceGetMappedArray(&texture_ptr, cuda_tex_result_resource, 0, 0));
+
+	int num_texels = image_width * image_height;
+	int num_values = num_texels * 4;
+	int size_tex_data = sizeof(GLubyte) * num_values;
+	checkCudaErrors(cudaMemcpyToArray(texture_ptr, 0, 0, cuda_dest_resource, size_tex_data, cudaMemcpyDeviceToDevice));
+
+	checkCudaErrors(cudaGraphicsUnmapResources(1, &cuda_tex_result_resource, 0));
+#endif
+}
+
 // copy image and process using CUDA
 void generateCUDAImage()
 {
     // run the Cuda kernel
-    unsigned int *out_data;
+	unsigned int *out_data = get_out_data();
 
-#ifdef USE_TEXSUBIMAGE2D
-    checkCudaErrors(cudaGraphicsMapResources(1, &cuda_pbo_dest_resource, 0));
-    size_t num_bytes;
-    checkCudaErrors(cudaGraphicsResourceGetMappedPointer((void **)&out_data, &num_bytes,
-                                                         cuda_pbo_dest_resource));
-    //printf("CUDA mapped pointer of pbo_out: May access %ld bytes, expected %d\n", num_bytes, size_tex_data);
-#else
-    out_data = cuda_dest_resource;
-#endif
-    // calculate grid size
-    dim3 block(16, 16, 1);
-    //dim3 block(16, 16, 1);
-    dim3 grid(image_width / block.x, image_height / block.y, 1);
-    // execute CUDA kernel
+	// calculate grid size
+	dim3 block(16, 16, 1);
+	//dim3 block(16, 16, 1);
+	dim3 grid(image_width / block.x, image_height / block.y, 1);
+	// execute CUDA kernel
 	k = 1 - k;
-    launch_cudaProcess(grid, block, 0, out_data, image_width, d_dst[k], d_dst[1-k], image_width, image_height);
+	launch_cudaProcess(grid, block, 0, out_data, image_width, d_dst[k], d_dst[1 - k], image_width, image_height);
 
-
-    // CUDA generated data in cuda memory or in a mapped PBO made of BGRA 8 bits
-    // 2 solutions, here :
-    // - use glTexSubImage2D(), there is the potential to loose performance in possible hidden conversion
-    // - map the texture and blit the result thanks to CUDA API
-#ifdef USE_TEXSUBIMAGE2D
-    checkCudaErrors(cudaGraphicsUnmapResources(1, &cuda_pbo_dest_resource, 0));
-    glBindBuffer(GL_PIXEL_UNPACK_BUFFER_ARB, pbo_dest);
-
-    glBindTexture(GL_TEXTURE_2D, tex_cudaResult);
-    glTexSubImage2D(GL_TEXTURE_2D, 0, 0, 0,
-                    image_width, image_height,
-                    GL_RGBA, GL_UNSIGNED_BYTE, NULL);
-    SDK_CHECK_ERROR_GL();
-    glBindBuffer(GL_PIXEL_PACK_BUFFER_ARB, 0);
-    glBindBuffer(GL_PIXEL_UNPACK_BUFFER_ARB, 0);
-#else
-    // We want to copy cuda_dest_resource data to the texture
-    // map buffer objects to get CUDA device pointers
-    cudaArray *texture_ptr;
-    checkCudaErrors(cudaGraphicsMapResources(1, &cuda_tex_result_resource, 0));
-    checkCudaErrors(cudaGraphicsSubResourceGetMappedArray(&texture_ptr, cuda_tex_result_resource, 0, 0));
-
-    int num_texels = image_width * image_height;
-    int num_values = num_texels * 4;
-    int size_tex_data = sizeof(GLubyte) * num_values;
-    checkCudaErrors(cudaMemcpyToArray(texture_ptr, 0, 0, cuda_dest_resource, size_tex_data, cudaMemcpyDeviceToDevice));
-
-    checkCudaErrors(cudaGraphicsUnmapResources(1, &cuda_tex_result_resource, 0));
-#endif
+	after_cudaProcess();
 }
+
+
 
 // display image to the screen as textured quad
 void displayImage(GLuint texture)
@@ -338,7 +361,9 @@ display()
 
     if (enable_cuda)
     {
-        generateCUDAImage();
+		if (!mouse_buttons) {
+			generateCUDAImage();
+		}
         displayImage(tex_cudaResult);
     }
 
@@ -423,6 +448,53 @@ keyboard(unsigned char key, int /*x*/, int /*y*/)
             break;
 
     }
+}
+
+void set_pixel(int x, int y, bool set) {
+	unsigned int *out_data = get_out_data();
+
+	launch_cudaProcess_setPixel(out_data, image_width, x, y, set);
+
+	// copy from device to host
+	cudaMemcpy(dst, d_dst[1 - k], mem_size, cudaMemcpyDeviceToHost);
+	// set or reest at (x,y)
+	dst[y * image_width + x] = set ? 1 : 0;
+	// copy from host to device
+	cudaMemcpy(d_dst[1 - k], dst, mem_size, cudaMemcpyHostToDevice);
+
+	// copy from device to host
+	cudaMemcpy(dst, d_dst[k], mem_size, cudaMemcpyDeviceToHost);
+	// set or reest at (x,y)
+	dst[y * image_width + x] = set ? 1 : 0;
+	// copy from host to device
+	cudaMemcpy(d_dst[k], dst, mem_size, cudaMemcpyHostToDevice);
+
+	after_cudaProcess();
+}
+////////////////////////////////////////////////////////////////////////////////
+//! Mouse event handlers
+////////////////////////////////////////////////////////////////////////////////
+void mouse(int button, int state, int x, int y)
+{
+	if (state == GLUT_DOWN) {
+		mouse_buttons |= 1 << button;
+	}
+	else if (state == GLUT_UP) {
+		mouse_buttons &= ~(1 << button);
+	}
+	mouse_old_x = x;
+	mouse_old_y = y;
+}
+
+void motion(int x, int y)
+{
+	int px = (float)image_width * ((float)(window_height - y) / (float)window_width);
+	int py = (float)image_height * ((float)x / (float)window_height);
+	
+	if (px < 0 || image_width < px || py < 0 || image_height < py)
+		return;
+
+	set_pixel(px, py, mouse_buttons == 1);
 }
 
 void reshape(int w, int h)
@@ -685,14 +757,13 @@ runStdProgram(int argc, char **argv)
 {
 	srand((unsigned int)time(0));
 
-	unsigned int mem_size = (image_width + 1) * (image_height + 1) * sizeof(int);
-	int* dst = (int*)malloc(mem_size);
+	mem_size = (image_width + 1) * (image_height + 1) * sizeof(int);
+	dst = (int*)malloc(mem_size);
 	for (int x = 0; x <= image_width; x++) {
 		for (int y = 0; y <= image_height; y++) {
 			dst[y + image_height * x] = (rand() % 3) ? 0 : 1;
 		}
 	}
-
 
 	cudaMalloc((void**)&d_dst[0], mem_size);
 	cudaMalloc((void**)&d_dst[1], mem_size);
@@ -715,6 +786,8 @@ runStdProgram(int argc, char **argv)
     // register callbacks
     glutDisplayFunc(display);
     glutKeyboardFunc(keyboard);
+	glutMouseFunc(mouse);
+	glutMotionFunc(motion);
     glutReshapeFunc(reshape);
     glutTimerFunc(REFRESH_DELAY, timerEvent, 0);
 
