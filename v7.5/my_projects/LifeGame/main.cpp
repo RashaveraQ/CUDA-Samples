@@ -488,10 +488,10 @@ void mouse(int button, int state, int x, int y)
 
 void motion(int x, int y)
 {
-	int px = (float)image_width * ((float)(window_height - y) / (float)window_width);
-	int py = (float)image_height * ((float)x / (float)window_height);
+	int px = (float)image_height * ((float)(window_height - y) / (float)window_height);
+	int py = (float)image_width * ((float)x / (float)window_width);
 	
-	if (px < 0 || image_width < px || py < 0 || image_height < py)
+	if (px < 0 || image_height < px || py < 0 || image_width < py)
 		return;
 
 	set_pixel(px, py, mouse_buttons == 1);
