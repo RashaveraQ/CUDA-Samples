@@ -14,7 +14,7 @@
     </ProjectConfiguration>
   </ItemGroup>
   <PropertyGroup Label="Globals">
-    <ProjectGuid>{997E0757-EA74-4A4E-A0FC-47D8C8831A15}</ProjectGuid>
+    <ProjectGuid>{584F7145-2B30-0993-0601-B30773034D5F}</ProjectGuid>
     <RootNamespace>nbody_vs2013</RootNamespace>
     <ProjectName>nbody</ProjectName>
     <CudaToolkitCustomDir />

@@ -14,7 +14,7 @@
     </ProjectConfiguration>
   </ItemGroup>
   <PropertyGroup Label="Globals">
-    <ProjectGuid>{997E0757-EA74-4A4E-A0FC-47D8C8831A15}</ProjectGuid>
+    <ProjectGuid>{01386238-CB6D-43EA-9F24-49F2348AA144}</ProjectGuid>
     <RootNamespace>quasirandomGenerator_nvrtc_vs2013</RootNamespace>
     <ProjectName>quasirandomGenerator_nvrtc</ProjectName>
     <CudaToolkitCustomDir />
@@ -62,7 +62,8 @@
       <OutputFile>$(OutDir)/quasirandomGenerator_nvrtc.exe</OutputFile>
     </Link>
     <CudaCompile>
-      <CodeGeneration></CodeGeneration>
+      <CodeGeneration>
+      </CodeGeneration>
       <AdditionalOptions>-Xcompiler "/wd 4819" %(AdditionalOptions)</AdditionalOptions>
       <Include>./;../../common/inc</Include>
       <Defines>WIN32</Defines>

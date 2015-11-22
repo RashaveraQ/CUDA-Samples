@@ -14,7 +14,7 @@
     </ProjectConfiguration>
   </ItemGroup>
   <PropertyGroup Label="Globals">
-    <ProjectGuid>{997E0757-EA74-4A4E-A0FC-47D8C8831A15}</ProjectGuid>
+    <ProjectGuid>{B7044F97-2A78-7D4B-45F4-4C0DA0F706F6}</ProjectGuid>
     <RootNamespace>FDTD3d_vs2013</RootNamespace>
     <ProjectName>FDTD3d</ProjectName>
     <CudaToolkitCustomDir />

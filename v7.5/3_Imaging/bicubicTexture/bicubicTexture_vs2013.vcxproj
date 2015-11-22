@@ -14,7 +14,7 @@
     </ProjectConfiguration>
   </ItemGroup>
   <PropertyGroup Label="Globals">
-    <ProjectGuid>{997E0757-EA74-4A4E-A0FC-47D8C8831A15}</ProjectGuid>
+    <ProjectGuid>{E5D07771-41CC-44EE-9471-312726B9DAA5}</ProjectGuid>
     <RootNamespace>bicubicTexture_vs2013</RootNamespace>
     <ProjectName>bicubicTexture</ProjectName>
     <CudaToolkitCustomDir />

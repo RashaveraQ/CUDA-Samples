@@ -14,7 +14,7 @@
     </ProjectConfiguration>
   </ItemGroup>
   <PropertyGroup Label="Globals">
-    <ProjectGuid>{997E0757-EA74-4A4E-A0FC-47D8C8831A15}</ProjectGuid>
+    <ProjectGuid>{C596FAEA-5F4B-89C0-B7E6-36F787B18881}</ProjectGuid>
     <RootNamespace>MC_EstimatePiInlineQ_vs2013</RootNamespace>
     <ProjectName>MC_EstimatePiInlineQ</ProjectName>
     <CudaToolkitCustomDir />

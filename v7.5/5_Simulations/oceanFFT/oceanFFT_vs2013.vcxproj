@@ -14,7 +14,7 @@
     </ProjectConfiguration>
   </ItemGroup>
   <PropertyGroup Label="Globals">
-    <ProjectGuid>{997E0757-EA74-4A4E-A0FC-47D8C8831A15}</ProjectGuid>
+    <ProjectGuid>{4B727F7A-7677-45B7-954D-07B7C6076EDC}</ProjectGuid>
     <RootNamespace>oceanFFT_vs2013</RootNamespace>
     <ProjectName>oceanFFT</ProjectName>
     <CudaToolkitCustomDir />
@@ -109,7 +109,6 @@
   <ItemGroup>
     <ClCompile Include="oceanFFT.cpp" />
     <CudaCompile Include="oceanFFT_kernel.cu" />
-
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

@@ -14,7 +14,7 @@
     </ProjectConfiguration>
   </ItemGroup>
   <PropertyGroup Label="Globals">
-    <ProjectGuid>{997E0757-EA74-4A4E-A0FC-47D8C8831A15}</ProjectGuid>
+    <ProjectGuid>{EAB14BE9-69C4-6DF1-81C2-2A90F19CC73F}</ProjectGuid>
     <RootNamespace>cudaDecodeD3D9_vs2013</RootNamespace>
     <ProjectName>cudaDecodeD3D9</ProjectName>
     <CudaToolkitCustomDir />

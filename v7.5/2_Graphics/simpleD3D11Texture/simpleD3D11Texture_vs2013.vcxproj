@@ -14,7 +14,7 @@
     </ProjectConfiguration>
   </ItemGroup>
   <PropertyGroup Label="Globals">
-    <ProjectGuid>{997E0757-EA74-4A4E-A0FC-47D8C8831A15}</ProjectGuid>
+    <ProjectGuid>{B0739B6A-E006-F0C6-F32F-F428DFB0A915}</ProjectGuid>
     <RootNamespace>simpleD3D11Texture_vs2013</RootNamespace>
     <ProjectName>simpleD3D11Texture</ProjectName>
     <CudaToolkitCustomDir />

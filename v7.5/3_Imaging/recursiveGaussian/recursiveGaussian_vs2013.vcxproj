@@ -14,7 +14,7 @@
     </ProjectConfiguration>
   </ItemGroup>
   <PropertyGroup Label="Globals">
-    <ProjectGuid>{997E0757-EA74-4A4E-A0FC-47D8C8831A15}</ProjectGuid>
+    <ProjectGuid>{1F7E7CCD-31B5-B17B-AF38-CB07F60F7F57}</ProjectGuid>
     <RootNamespace>recursiveGaussian_vs2013</RootNamespace>
     <ProjectName>recursiveGaussian</ProjectName>
     <CudaToolkitCustomDir />

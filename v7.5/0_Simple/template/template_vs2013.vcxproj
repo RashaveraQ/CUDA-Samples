@@ -14,7 +14,7 @@
     </ProjectConfiguration>
   </ItemGroup>
   <PropertyGroup Label="Globals">
-    <ProjectGuid>{997E0757-EA74-4A4E-A0FC-47D8C8831A15}</ProjectGuid>
+    <ProjectGuid>{55F71337-32A6-4C26-8CBA-A06A9183D6F2}</ProjectGuid>
     <RootNamespace>template_vs2013</RootNamespace>
     <ProjectName>template</ProjectName>
     <CudaToolkitCustomDir />
@@ -99,7 +99,6 @@
   <ItemGroup>
     <CudaCompile Include="template.cu" />
     <ClCompile Include="template_cpu.cpp" />
-
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

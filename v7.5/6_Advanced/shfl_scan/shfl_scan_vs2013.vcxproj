@@ -14,7 +14,7 @@
     </ProjectConfiguration>
   </ItemGroup>
   <PropertyGroup Label="Globals">
-    <ProjectGuid>{997E0757-EA74-4A4E-A0FC-47D8C8831A15}</ProjectGuid>
+    <ProjectGuid>{E2308696-6D28-42A0-A656-E8A4C033C035}</ProjectGuid>
     <RootNamespace>shfl_scan_vs2013</RootNamespace>
     <ProjectName>shfl_scan</ProjectName>
     <CudaToolkitCustomDir />

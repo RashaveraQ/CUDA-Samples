@@ -14,7 +14,7 @@
     </ProjectConfiguration>
   </ItemGroup>
   <PropertyGroup Label="Globals">
-    <ProjectGuid>{997E0757-EA74-4A4E-A0FC-47D8C8831A15}</ProjectGuid>
+    <ProjectGuid>{D94C7D64-3390-F841-9883-FC53C2353318}</ProjectGuid>
     <RootNamespace>quasirandomGenerator_vs2013</RootNamespace>
     <ProjectName>quasirandomGenerator</ProjectName>
     <CudaToolkitCustomDir />
