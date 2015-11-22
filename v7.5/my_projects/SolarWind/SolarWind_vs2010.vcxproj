@@ -14,7 +14,7 @@
     </ProjectConfiguration>
   </ItemGroup>
   <PropertyGroup Label="Globals">
-    <ProjectGuid>{997E0757-EA74-4A4E-A0FC-47D8C8831A15}</ProjectGuid>
+    <ProjectGuid>{7611424F-518E-4C75-9BCD-39845E97B7BA}</ProjectGuid>
     <RootNamespace>SolarWind_vs2010</RootNamespace>
     <ProjectName>SolarWind</ProjectName>
     <CudaToolkitCustomDir />
