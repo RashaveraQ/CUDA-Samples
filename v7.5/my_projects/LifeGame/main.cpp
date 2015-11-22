@@ -65,7 +65,9 @@ unsigned int window_height = 512;
 unsigned int image_width = 512;
 unsigned int image_height = 512;
 int iGLUTWindowHandle = 0;          // handle to the GLUT window
+
 int* dst[2];
+int k = 0;
 
 // pbo and fbo variables
 #ifdef USE_TEXSUBIMAGE2D
@@ -117,7 +119,7 @@ GLuint shDraw;
 extern "C" void
 launch_cudaProcess(dim3 grid, dim3 block, int sbytes,
                    unsigned int *g_odata,
-                   int imgw);
+                   int imgw, int *dst, int *src, int WIDTH, int HEIGHT);
 
 // Forward declarations
 void runStdProgram(int argc, char **argv);
@@ -242,7 +244,8 @@ void generateCUDAImage()
     //dim3 block(16, 16, 1);
     dim3 grid(image_width / block.x, image_height / block.y, 1);
     // execute CUDA kernel
-    launch_cudaProcess(grid, block, 0, out_data, image_width);
+	k = 1 - k;
+    launch_cudaProcess(grid, block, 0, out_data, image_width, dst[k], dst[1-k], image_width, image_height);
 
 
     // CUDA generated data in cuda memory or in a mapped PBO made of BGRA 8 bits

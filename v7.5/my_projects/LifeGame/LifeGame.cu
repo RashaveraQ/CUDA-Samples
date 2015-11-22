@@ -34,7 +34,7 @@ __device__ int rgbToInt(float r, float g, float b)
 }
 
 __global__ void
-cudaProcess(unsigned int *g_odata, int imgw)
+cudaProcess(unsigned int *g_odata, int imgw, int *dst, int *src, int WIDTH, int HEIGHT)
 {
     extern __shared__ uchar4 sdata[];
 
@@ -45,15 +45,52 @@ cudaProcess(unsigned int *g_odata, int imgw)
     int x = blockIdx.x*bw + tx;
     int y = blockIdx.y*bh + ty;
 
-    uchar4 c4 = make_uchar4((x & 0x20)?100:0,0,(y & 0x20)?100:0,0);
+	if (x <= 0 || WIDTH <= x || y <= 0 || HEIGHT <= y)
+		return;
+
+	int s = src[(y - 1) + (x - 1) * HEIGHT] + src[(y - 1) + x * HEIGHT] + src[(y - 1) + (x + 1) * HEIGHT]
+		+ src[y + (x - 1) * HEIGHT] + src[y + (x + 1) * HEIGHT]
+		+ src[(y + 1) + (x - 1) * HEIGHT] + src[(y + 1) + x * HEIGHT] + src[(y + 1) + (x + 1) * HEIGHT];
+
+	switch (s) {
+	case 2:	// ˆÛŽ
+		dst[y + x * HEIGHT] = src[y + x * HEIGHT];
+		break;
+	case 3:	// ’a¶
+		dst[y + x * HEIGHT] = 1;
+		break;
+	default: // Ž€–Å
+		dst[y + x * HEIGHT] = 0;
+		break;
+	}
+
+
+    uchar4 c4 = (dst[y + x * HEIGHT] == 1) ? make_uchar4(255,255,255,0) : make_uchar4(0,0,0,0);
     g_odata[y*imgw+x] = rgbToInt(c4.z, c4.y, c4.x);
 }
 
 extern "C" void
 launch_cudaProcess(dim3 grid, dim3 block, int sbytes,
                    unsigned int *g_odata,
-                   int imgw)
+                   int imgw, int *dst, int *src, int WIDTH, int HEIGHT)
 {
-    cudaProcess<<< grid, block, sbytes >>>(g_odata, imgw);
+	unsigned int mem_size = (WIDTH + 1) * (HEIGHT + 1) * sizeof(int);
 
+	int*	d_dst;
+	int*	d_src;
+
+	cudaMalloc((void**)&d_dst, mem_size);
+	cudaMalloc((void**)&d_src, mem_size);
+	cudaMemcpy(d_dst, dst, mem_size, cudaMemcpyHostToDevice);
+	cudaMemcpy(d_src, src, mem_size, cudaMemcpyHostToDevice);
+
+    cudaProcess<<< grid, block, sbytes >>>(g_odata, imgw, d_dst, d_src, WIDTH, HEIGHT);
+
+	// copy results from device to host
+	cudaMemcpy(dst, d_dst, mem_size, cudaMemcpyDeviceToHost);
+	cudaMemcpy(src, d_src, mem_size, cudaMemcpyDeviceToHost);
+
+	// cleanup memory
+	cudaFree(d_dst);
+	cudaFree(d_src);
 }
