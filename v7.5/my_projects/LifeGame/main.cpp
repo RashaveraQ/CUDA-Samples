@@ -60,10 +60,10 @@ CheckRender *g_CheckRender = NULL;
 
 ////////////////////////////////////////////////////////////////////////////////
 // constants / global variables
-unsigned int window_width = 2000;
-unsigned int window_height = 2000;
-unsigned int image_width = 2000;
-unsigned int image_height = 2000;
+unsigned int window_width = 3840;
+unsigned int window_height = 2160;
+unsigned int image_width = 3840;
+unsigned int image_height = 2160;
 int iGLUTWindowHandle = 0;          // handle to the GLUT window
 
 int*	d_dst[2];
