@@ -66,7 +66,7 @@ unsigned int image_width = 2000;
 unsigned int image_height = 2000;
 int iGLUTWindowHandle = 0;          // handle to the GLUT window
 
-int* dst[2];
+int*	d_dst[2];
 int k = 0;
 
 // pbo and fbo variables
@@ -245,7 +245,7 @@ void generateCUDAImage()
     dim3 grid(image_width / block.x, image_height / block.y, 1);
     // execute CUDA kernel
 	k = 1 - k;
-    launch_cudaProcess(grid, block, 0, out_data, image_width, dst[k], dst[1-k], image_width, image_height);
+    launch_cudaProcess(grid, block, 0, out_data, image_width, d_dst[k], d_dst[1-k], image_width, image_height);
 
 
     // CUDA generated data in cuda memory or in a mapped PBO made of BGRA 8 bits
@@ -685,14 +685,19 @@ runStdProgram(int argc, char **argv)
 {
 	srand((unsigned int)time(0));
 
-	for (int k = 0; k < 2; k++) {
-		dst[k] = (int*)malloc((image_width + 1) * (image_height + 1) * sizeof(int));
-		for (int x = 0; x <= image_width; x++) {
-			for (int y = 0; y <= image_height; y++) {
-				dst[k][y + image_height * x] = (rand() % 3) ? 0 : 1;
-			}
+	unsigned int mem_size = (image_width + 1) * (image_height + 1) * sizeof(int);
+	int* dst = (int*)malloc(mem_size);
+	for (int x = 0; x <= image_width; x++) {
+		for (int y = 0; y <= image_height; y++) {
+			dst[y + image_height * x] = (rand() % 3) ? 0 : 1;
 		}
 	}
+
+
+	cudaMalloc((void**)&d_dst[0], mem_size);
+	cudaMalloc((void**)&d_dst[1], mem_size);
+	cudaMemcpy(d_dst[0], dst, mem_size, cudaMemcpyHostToDevice);
+	cudaMemcpy(d_dst[1], dst, mem_size, cudaMemcpyHostToDevice);
 
     // First initialize OpenGL context, so we can properly set the GL for CUDA.
     // This is necessary in order to achieve optimal performance with OpenGL/CUDA interop.
@@ -740,6 +745,10 @@ runStdProgram(int argc, char **argv)
 
     // start rendering mainloop
     glutMainLoop();
+
+	// cleanup memory
+	cudaFree(d_dst[0]);
+	cudaFree(d_dst[1]);
 
     // Normally unused return path
     Cleanup(EXIT_SUCCESS);

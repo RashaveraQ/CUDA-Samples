@@ -72,25 +72,7 @@ cudaProcess(unsigned int *g_odata, int imgw, int *dst, int *src, int WIDTH, int 
 extern "C" void
 launch_cudaProcess(dim3 grid, dim3 block, int sbytes,
                    unsigned int *g_odata,
-                   int imgw, int *dst, int *src, int WIDTH, int HEIGHT)
+                   int imgw, int *d_dst, int *d_src, int WIDTH, int HEIGHT)
 {
-	unsigned int mem_size = (WIDTH + 1) * (HEIGHT + 1) * sizeof(int);
-
-	int*	d_dst;
-	int*	d_src;
-
-	cudaMalloc((void**)&d_dst, mem_size);
-	cudaMalloc((void**)&d_src, mem_size);
-	cudaMemcpy(d_dst, dst, mem_size, cudaMemcpyHostToDevice);
-	cudaMemcpy(d_src, src, mem_size, cudaMemcpyHostToDevice);
-
     cudaProcess<<< grid, block, sbytes >>>(g_odata, imgw, d_dst, d_src, WIDTH, HEIGHT);
-
-	// copy results from device to host
-	cudaMemcpy(dst, d_dst, mem_size, cudaMemcpyDeviceToHost);
-	cudaMemcpy(src, d_src, mem_size, cudaMemcpyDeviceToHost);
-
-	// cleanup memory
-	cudaFree(d_dst);
-	cudaFree(d_src);
 }
