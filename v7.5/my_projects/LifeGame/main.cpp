@@ -13,7 +13,7 @@
 // USE_TEXSUBIMAGE2D uses glTexSubImage2D() to update the final result
 // commenting it will make the sample use the other way :
 // map a texture in CUDA and blit the result into it
-//#define USE_TEXSUBIMAGE2D
+#define USE_TEXSUBIMAGE2D
 
 #if defined(WIN32) || defined(_WIN32) || defined(WIN64) || defined(_WIN64)
 #  define WINDOWS_LEAN_AND_MEAN
@@ -21,6 +21,8 @@
 #  include <windows.h>
 #pragma warning(disable:4996)
 #endif
+
+#include <time.h>
 
 // OpenGL Graphics includes
 #include <GL/glew.h>
@@ -63,6 +65,7 @@ unsigned int window_height = 512;
 unsigned int image_width = 512;
 unsigned int image_height = 512;
 int iGLUTWindowHandle = 0;          // handle to the GLUT window
+int* dst[2];
 
 // pbo and fbo variables
 #ifdef USE_TEXSUBIMAGE2D
@@ -677,6 +680,17 @@ void initGLBuffers()
 void
 runStdProgram(int argc, char **argv)
 {
+	srand((unsigned int)time(0));
+
+	for (int k = 0; k < 2; k++) {
+		dst[k] = (int*)malloc((image_width + 1) * (image_height + 1) * sizeof(int));
+		for (int x = 0; x <= image_width; x++) {
+			for (int y = 0; y <= image_height; y++) {
+				dst[k][y + image_height * x] = (rand() % 3) ? 0 : 1;
+			}
+		}
+	}
+
     // First initialize OpenGL context, so we can properly set the GL for CUDA.
     // This is necessary in order to achieve optimal performance with OpenGL/CUDA interop.
     if (false == initGL(&argc, argv))
