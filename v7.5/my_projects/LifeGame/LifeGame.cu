@@ -81,7 +81,7 @@ cudaProcess(unsigned int *g_odata, int *dst, int *src, int width, int height, in
 		break;
 	}
 
-    uchar4 c4 = (dst[c] == 1) ? make_uchar4(255,255,255,0) : make_uchar4(0,0,0,0);
+    uchar4 c4 = (dst[c] == 1) ? make_uchar4(128,128,128,0) : make_uchar4(0,0,0,0);
 	g_odata[c] = rgbToInt(c4.z, c4.y, c4.x);
 }
 
