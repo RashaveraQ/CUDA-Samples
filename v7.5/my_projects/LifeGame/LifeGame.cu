@@ -34,10 +34,8 @@ __device__ int rgbToInt(float r, float g, float b)
 }
 
 __global__ void
-cudaProcess(unsigned int *g_odata, int imgw, int *dst, int *src, int WIDTH, int HEIGHT)
+cudaProcess(unsigned int *g_odata, int *dst, int *src, int WIDTH, int HEIGHT, int mouse_buttons, int mouse_x, int mouse_y)
 {
-    extern __shared__ uchar4 sdata[];
-
     int tx = threadIdx.x;
     int ty = threadIdx.y;
     int bw = blockDim.x;
@@ -48,33 +46,41 @@ cudaProcess(unsigned int *g_odata, int imgw, int *dst, int *src, int WIDTH, int 
 	if (x <= 0 || WIDTH <= x || y <= 0 || HEIGHT <= y)
 		return;
 
-	int s = src[(y - 1) + (x - 1) * HEIGHT] + src[(y - 1) + x * HEIGHT] + src[(y - 1) + (x + 1) * HEIGHT]
-		+ src[y + (x - 1) * HEIGHT] + src[y + (x + 1) * HEIGHT]
-		+ src[(y + 1) + (x - 1) * HEIGHT] + src[(y + 1) + x * HEIGHT] + src[(y + 1) + (x + 1) * HEIGHT];
-
-	switch (s) {
-	case 2:	// ˆÛŽ
-		dst[y + x * HEIGHT] = src[y + x * HEIGHT];
+	int s;
+	switch (mouse_buttons) {
+	case 1:
+		s = (x == mouse_x && y == mouse_y) ? 3 : 2;
 		break;
-	case 3:	// ’a¶
-		dst[y + x * HEIGHT] = 1;
+	case 4:
+		s = (x == mouse_x && y == mouse_y) ? 4 : 2;
 		break;
-	default: // Ž€–Å
-		dst[y + x * HEIGHT] = 0;
+	default:
+		s = src[(y - 1) * WIDTH + (x - 1)] + src[(y - 1) * WIDTH + x] + src[(y - 1) * WIDTH + (x + 1)]
+			+ src[y * WIDTH + (x - 1)] + src[y * WIDTH + (x + 1)]
+			+ src[(y + 1) * WIDTH + (x - 1)] + src[(y + 1) * WIDTH + x] + src[(y + 1) * WIDTH + (x + 1)];
 		break;
 	}
 
+	switch (s) {
+	case 2:	// ˆÛŽ
+		dst[y * WIDTH + x] = src[y * WIDTH + x];
+		break;
+	case 3:	// ’a¶
+		dst[y * WIDTH + x] = 1;
+		break;
+	default: // Ž€–Å
+		dst[y * WIDTH + x] = 0;
+		break;
+	}
 
-    uchar4 c4 = (dst[y + x * HEIGHT] == 1) ? make_uchar4(255,255,255,0) : make_uchar4(0,0,0,0);
-    g_odata[y*imgw+x] = rgbToInt(c4.z, c4.y, c4.x);
+    uchar4 c4 = (dst[y * WIDTH + x] == 1) ? make_uchar4(255,255,255,0) : make_uchar4(0,0,0,0);
+	g_odata[y * WIDTH + x] = rgbToInt(c4.z, c4.y, c4.x);
 }
 
 extern "C" void
-launch_cudaProcess(dim3 grid, dim3 block, int sbytes,
-                   unsigned int *g_odata,
-                   int imgw, int *d_dst, int *d_src, int WIDTH, int HEIGHT)
+launch_cudaProcess(dim3 grid, dim3 block, int sbytes, unsigned int *g_odata, int *d_dst, int *d_src, int WIDTH, int HEIGHT, int mouse_buttons, int mouse_x, int mouse_y)
 {
-    cudaProcess<<< grid, block, sbytes >>>(g_odata, imgw, d_dst, d_src, WIDTH, HEIGHT);
+    cudaProcess<<< grid, block, sbytes >>>(g_odata, d_dst, d_src, WIDTH, HEIGHT, mouse_buttons, mouse_x, mouse_y);
 }
 
 __global__ void

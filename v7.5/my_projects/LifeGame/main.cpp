@@ -123,9 +123,7 @@ GLuint shDraw;
 
 ////////////////////////////////////////////////////////////////////////////////
 extern "C" void
-launch_cudaProcess(dim3 grid, dim3 block, int sbytes,
-                   unsigned int *g_odata,
-                   int imgw, int *dst, int *src, int WIDTH, int HEIGHT);
+launch_cudaProcess(dim3 grid, dim3 block, int sbytes, unsigned int *g_odata, int *dst, int *src, int imgw, int imgh, int mouse_buttons, int mouse_x, int mouse_y);
 
 extern "C" void
 launch_cudaProcess_setPixel(unsigned int *g_odata, int imgw, int x, int y, bool set);
@@ -233,7 +231,8 @@ static const char *glsl_draw_fragshader_src =
     "}\n";
 #endif
 
-unsigned int *get_out_data()
+// copy image and process using CUDA
+void generateCUDAImage()
 {
 	// run the Cuda kernel
 	unsigned int *out_data;
@@ -247,11 +246,15 @@ unsigned int *get_out_data()
 #else
 	out_data = cuda_dest_resource;
 #endif
-	return out_data;
-}
 
-void after_cudaProcess()
-{
+	// calculate grid size
+	dim3 block(16, 16, 1);
+	//dim3 block(16, 16, 1);
+	dim3 grid(image_width / block.x, image_height / block.y, 1);
+	// execute CUDA kernel
+	k = 1 - k;
+	launch_cudaProcess(grid, block, 0, out_data, d_dst[k], d_dst[1 - k], image_width, image_height, mouse_buttons, mouse_old_x, mouse_old_y);
+
 	// CUDA generated data in cuda memory or in a mapped PBO made of BGRA 8 bits
 	// 2 solutions, here :
 	// - use glTexSubImage2D(), there is the potential to loose performance in possible hidden conversion
@@ -281,23 +284,6 @@ void after_cudaProcess()
 
 	checkCudaErrors(cudaGraphicsUnmapResources(1, &cuda_tex_result_resource, 0));
 #endif
-}
-
-// copy image and process using CUDA
-void generateCUDAImage()
-{
-    // run the Cuda kernel
-	unsigned int *out_data = get_out_data();
-
-	// calculate grid size
-	dim3 block(16, 16, 1);
-	//dim3 block(16, 16, 1);
-	dim3 grid(image_width / block.x, image_height / block.y, 1);
-	// execute CUDA kernel
-	k = 1 - k;
-	launch_cudaProcess(grid, block, 0, out_data, image_width, d_dst[k], d_dst[1 - k], image_width, image_height);
-
-	after_cudaProcess();
 }
 
 
@@ -361,9 +347,7 @@ display()
 
     if (enable_cuda)
     {
-		if (!mouse_buttons) {
-			generateCUDAImage();
-		}
+		generateCUDAImage();
         displayImage(tex_cudaResult);
     }
 
@@ -449,7 +433,7 @@ keyboard(unsigned char key, int /*x*/, int /*y*/)
 
     }
 }
-
+/*
 void set_pixel(int x, int y, bool set) {
 	unsigned int *out_data = get_out_data();
 
@@ -471,9 +455,16 @@ void set_pixel(int x, int y, bool set) {
 
 	after_cudaProcess();
 }
+*/
 ////////////////////////////////////////////////////////////////////////////////
 //! Mouse event handlers
 ////////////////////////////////////////////////////////////////////////////////
+void motion(int x, int y)
+{
+	mouse_old_x = (float)image_width * ((float)x / (float)window_width);
+	mouse_old_y = (float)image_height * ((float)(window_height - y) / (float)window_height);
+}
+
 void mouse(int button, int state, int x, int y)
 {
 	if (state == GLUT_DOWN) {
@@ -482,19 +473,7 @@ void mouse(int button, int state, int x, int y)
 	else if (state == GLUT_UP) {
 		mouse_buttons &= ~(1 << button);
 	}
-	mouse_old_x = x;
-	mouse_old_y = y;
-}
-
-void motion(int x, int y)
-{
-	int px = (float)image_height * ((float)(window_height - y) / (float)window_height);
-	int py = (float)image_width * ((float)x / (float)window_width);
-	
-	if (px < 0 || image_height < px || py < 0 || image_width < py)
-		return;
-
-	set_pixel(px, py, mouse_buttons == 1);
+	motion(x, y);
 }
 
 void reshape(int w, int h)
@@ -761,7 +740,7 @@ runStdProgram(int argc, char **argv)
 	dst = (int*)malloc(mem_size);
 	for (int x = 0; x <= image_width; x++) {
 		for (int y = 0; y <= image_height; y++) {
-			dst[y + image_height * x] = (rand() % 3) ? 0 : 1;
+			dst[y * image_width + x] = (rand() % 3) ? 0 : 1;
 		}
 	}
 
@@ -792,9 +771,9 @@ runStdProgram(int argc, char **argv)
     glutTimerFunc(REFRESH_DELAY, timerEvent, 0);
 
     // create menu
-    glutCreateMenu(mainMenu);
-    glutAddMenuEntry("Quit (esc)", '\033');
-    glutAttachMenu(GLUT_RIGHT_BUTTON);
+    //glutCreateMenu(mainMenu);
+    //glutAddMenuEntry("Quit (esc)", '\033');
+    //glutAttachMenu(GLUT_RIGHT_BUTTON);
 
     initGLBuffers();
 #ifndef USE_TEXSUBIMAGE2D
