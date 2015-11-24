@@ -433,36 +433,14 @@ keyboard(unsigned char key, int /*x*/, int /*y*/)
 
     }
 }
-/*
-void set_pixel(int x, int y, bool set) {
-	unsigned int *out_data = get_out_data();
 
-	launch_cudaProcess_setPixel(out_data, image_width, x, y, set);
-
-	// copy from device to host
-	cudaMemcpy(dst, d_dst[1 - k], mem_size, cudaMemcpyDeviceToHost);
-	// set or reest at (x,y)
-	dst[y * image_width + x] = set ? 1 : 0;
-	// copy from host to device
-	cudaMemcpy(d_dst[1 - k], dst, mem_size, cudaMemcpyHostToDevice);
-
-	// copy from device to host
-	cudaMemcpy(dst, d_dst[k], mem_size, cudaMemcpyDeviceToHost);
-	// set or reest at (x,y)
-	dst[y * image_width + x] = set ? 1 : 0;
-	// copy from host to device
-	cudaMemcpy(d_dst[k], dst, mem_size, cudaMemcpyHostToDevice);
-
-	after_cudaProcess();
-}
-*/
 ////////////////////////////////////////////////////////////////////////////////
 //! Mouse event handlers
 ////////////////////////////////////////////////////////////////////////////////
 void motion(int x, int y)
 {
-	mouse_old_x = (float)image_width * ((float)x / (float)window_width);
-	mouse_old_y = (float)image_height * ((float)(window_height - y) / (float)window_height);
+	mouse_old_x = (int)((float)image_width * ((float)x / (float)window_width));
+	mouse_old_y = (int)((float)image_height * ((float)(window_height - y) / (float)window_height));
 }
 
 void mouse(int button, int state, int x, int y)
@@ -738,8 +716,8 @@ runStdProgram(int argc, char **argv)
 
 	mem_size = (image_width + 1) * (image_height + 1) * sizeof(int);
 	dst = (int*)malloc(mem_size);
-	for (int x = 0; x <= image_width; x++) {
-		for (int y = 0; y <= image_height; y++) {
+	for (unsigned int x = 0; x <= image_width; x++) {
+		for (unsigned int y = 0; y <= image_height; y++) {
 			dst[y * image_width + x] = (rand() % 3) ? 0 : 1;
 		}
 	}
