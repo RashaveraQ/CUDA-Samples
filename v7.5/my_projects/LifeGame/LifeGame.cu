@@ -33,8 +33,15 @@ __device__ int rgbToInt(float r, float g, float b)
     return (int(b)<<16) | (int(g)<<8) | int(r);
 }
 
+__device__ int idx(int x, int y, int width, int height)
+{
+	x = (x < 0) ? (width + x) : (width <= x) ? (x - width) : x;
+	y = (y < 0) ? (height + y) : (height <= y) ? (y - height) : y;
+	return y * width + x;
+}
+
 __global__ void
-cudaProcess(unsigned int *g_odata, int *dst, int *src, int WIDTH, int HEIGHT, int mouse_buttons, int mouse_x, int mouse_y)
+cudaProcess(unsigned int *g_odata, int *dst, int *src, int width, int height, int mouse_buttons, int mouse_x, int mouse_y)
 {
     int tx = threadIdx.x;
     int ty = threadIdx.y;
@@ -43,7 +50,7 @@ cudaProcess(unsigned int *g_odata, int *dst, int *src, int WIDTH, int HEIGHT, in
     int x = blockIdx.x*bw + tx;
     int y = blockIdx.y*bh + ty;
 
-	if (x <= 0 || WIDTH <= x || y <= 0 || HEIGHT <= y)
+	if (x < 0 || width <= x || y < 0 || height <= y)
 		return;
 
 	int s;
@@ -55,26 +62,27 @@ cudaProcess(unsigned int *g_odata, int *dst, int *src, int WIDTH, int HEIGHT, in
 		s = (x == mouse_x && y == mouse_y) ? 4 : 2;
 		break;
 	default:
-		s = src[(y - 1) * WIDTH + (x - 1)] + src[(y - 1) * WIDTH + x] + src[(y - 1) * WIDTH + (x + 1)]
-			+ src[y * WIDTH + (x - 1)] + src[y * WIDTH + (x + 1)]
-			+ src[(y + 1) * WIDTH + (x - 1)] + src[(y + 1) * WIDTH + x] + src[(y + 1) * WIDTH + (x + 1)];
+		s = src[idx(x - 1, y - 1, width, height)] + src[idx(x, y - 1, width, height)] + src[idx(x + 1, y - 1, width, height)]
+			+ src[idx(x - 1, y, width, height)] + src[idx(x + 1, y, width, height)]
+			+ src[idx(x - 1, y + 1, width, height)] + src[idx(x, y + 1, width, height)] + src[idx(x + 1, y + 1, width, height)];
 		break;
 	}
 
+	int c = idx(x, y, width, height);
 	switch (s) {
 	case 2:	// ˆÛŽ
-		dst[y * WIDTH + x] = src[y * WIDTH + x];
+		dst[c] = src[c];
 		break;
 	case 3:	// ’a¶
-		dst[y * WIDTH + x] = 1;
+		dst[c] = 1;
 		break;
 	default: // Ž€–Å
-		dst[y * WIDTH + x] = 0;
+		dst[c] = 0;
 		break;
 	}
 
-    uchar4 c4 = (dst[y * WIDTH + x] == 1) ? make_uchar4(255,255,255,0) : make_uchar4(0,0,0,0);
-	g_odata[y * WIDTH + x] = rgbToInt(c4.z, c4.y, c4.x);
+    uchar4 c4 = (dst[c] == 1) ? make_uchar4(255,255,255,0) : make_uchar4(0,0,0,0);
+	g_odata[c] = rgbToInt(c4.z, c4.y, c4.x);
 }
 
 extern "C" void
@@ -83,15 +91,3 @@ launch_cudaProcess(dim3 grid, dim3 block, int sbytes, unsigned int *g_odata, int
     cudaProcess<<< grid, block, sbytes >>>(g_odata, d_dst, d_src, WIDTH, HEIGHT, mouse_buttons, mouse_x, mouse_y);
 }
 
-__global__ void
-cudaProcess_setPixel(unsigned int *g_odata, int imgw, int x, int y, bool set)
-{
-	uchar4 c4 = set ? make_uchar4(255, 255, 0, 0) : make_uchar4(20, 20, 20, 0);
-	g_odata[y*imgw+x] = rgbToInt(c4.z, c4.y, c4.x);
-}
-
-extern "C" void
-launch_cudaProcess_setPixel(unsigned int *g_odata, int imgw, int x, int y, bool set)
-{
-	cudaProcess_setPixel <<<1, 0 >>>(g_odata, imgw, x, y, set);
-}

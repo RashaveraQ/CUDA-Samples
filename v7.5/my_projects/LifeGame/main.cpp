@@ -62,8 +62,8 @@ CheckRender *g_CheckRender = NULL;
 // constants / global variables
 unsigned int window_width = 1000;
 unsigned int window_height = 1000;
-unsigned int image_width = 1000;
-unsigned int image_height = 1000;
+unsigned int image_width = 100;
+unsigned int image_height = 100;
 int iGLUTWindowHandle = 0;          // handle to the GLUT window
 
 unsigned int mem_size;
@@ -124,9 +124,6 @@ GLuint shDraw;
 ////////////////////////////////////////////////////////////////////////////////
 extern "C" void
 launch_cudaProcess(dim3 grid, dim3 block, int sbytes, unsigned int *g_odata, int *dst, int *src, int imgw, int imgh, int mouse_buttons, int mouse_x, int mouse_y);
-
-extern "C" void
-launch_cudaProcess_setPixel(unsigned int *g_odata, int imgw, int x, int y, bool set);
 
 // Forward declarations
 void runStdProgram(int argc, char **argv);
@@ -714,10 +711,10 @@ runStdProgram(int argc, char **argv)
 {
 	srand((unsigned int)time(0));
 
-	mem_size = (image_width + 1) * (image_height + 1) * sizeof(int);
+	mem_size = image_width * image_height * sizeof(int);
 	dst = (int*)malloc(mem_size);
-	for (unsigned int x = 0; x <= image_width; x++) {
-		for (unsigned int y = 0; y <= image_height; y++) {
+	for (unsigned int x = 0; x < image_width; x++) {
+		for (unsigned int y = 0; y < image_height; y++) {
 			dst[y * image_width + x] = (rand() % 3) ? 0 : 1;
 		}
 	}
