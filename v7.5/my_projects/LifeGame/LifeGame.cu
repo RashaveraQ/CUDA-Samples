@@ -35,8 +35,8 @@ __device__ int rgbToInt(float r, float g, float b)
 
 __device__ int idx(int x, int y, int width, int height)
 {
-	x = (x < 0) ? (width + x) : (width <= x) ? (x - width) : x;
-	y = (y < 0) ? (height + y) : (height <= y) ? (y - height) : y;
+	x = (x < 0) ? (width - 1) : (width <= x) ? 0 : x;
+	y = (y < 0) ? (height - 1) : (height <= y) ? 0 : y;
 	return y * width + x;
 }
 
@@ -62,8 +62,8 @@ cudaProcess(unsigned int *g_odata, int *dst, int *src, int width, int height, in
 		s = (x == mouse_x && y == mouse_y) ? 4 : 2;
 		break;
 	default:
-		s = src[idx(x - 1, y - 1, width, height)] + src[idx(x, y - 1, width, height)] + src[idx(x + 1, y - 1, width, height)]
-			+ src[idx(x - 1, y, width, height)] + src[idx(x + 1, y, width, height)]
+		s =   src[idx(x - 1, y - 1, width, height)] + src[idx(x, y - 1, width, height)] + src[idx(x + 1, y - 1, width, height)]
+			+ src[idx(x - 1, y    , width, height)]                                     + src[idx(x + 1, y    , width, height)]
 			+ src[idx(x - 1, y + 1, width, height)] + src[idx(x, y + 1, width, height)] + src[idx(x + 1, y + 1, width, height)];
 		break;
 	}

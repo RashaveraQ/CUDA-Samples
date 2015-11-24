@@ -62,8 +62,8 @@ CheckRender *g_CheckRender = NULL;
 // constants / global variables
 unsigned int window_width = 1000;
 unsigned int window_height = 1000;
-unsigned int image_width = 100;
-unsigned int image_height = 100;
+unsigned int image_width = 512;
+unsigned int image_height = 512;
 int iGLUTWindowHandle = 0;          // handle to the GLUT window
 
 unsigned int mem_size;
@@ -718,6 +718,10 @@ runStdProgram(int argc, char **argv)
 			dst[y * image_width + x] = (rand() % 3) ? 0 : 1;
 		}
 	}
+
+	// グライダー
+	//int offset = 10 * image_width + 20;
+	//dst[offset + 0] = dst[offset + 1] = dst[offset + 2] = dst[offset + image_width] = dst[offset + 2 * image_width + 1] = 1;
 
 	cudaMalloc((void**)&d_dst[0], mem_size);
 	cudaMalloc((void**)&d_dst[1], mem_size);
