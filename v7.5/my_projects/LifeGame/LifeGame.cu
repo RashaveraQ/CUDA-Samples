@@ -41,7 +41,7 @@ __device__ int idx(int x, int y, int width, int height)
 }
 
 __global__ void
-cudaProcess(unsigned int *g_odata, int *dst, int *src, int width, int height, int mouse_buttons, int mouse_x, int mouse_y)
+cudaProcess(unsigned int *g_odata, int *dst, int *src, int width, int height, int mouse_buttons, int mouse_x, int mouse_y, bool is_running)
 {
     int tx = threadIdx.x;
     int ty = threadIdx.y;
@@ -62,9 +62,11 @@ cudaProcess(unsigned int *g_odata, int *dst, int *src, int width, int height, in
 		s = (x == mouse_x && y == mouse_y) ? 4 : 2;
 		break;
 	default:
-		s =   src[idx(x - 1, y - 1, width, height)] + src[idx(x, y - 1, width, height)] + src[idx(x + 1, y - 1, width, height)]
+		s = (is_running) ?
+			src[idx(x - 1, y - 1, width, height)] + src[idx(x, y - 1, width, height)] + src[idx(x + 1, y - 1, width, height)]
 			+ src[idx(x - 1, y    , width, height)]                                     + src[idx(x + 1, y    , width, height)]
-			+ src[idx(x - 1, y + 1, width, height)] + src[idx(x, y + 1, width, height)] + src[idx(x + 1, y + 1, width, height)];
+			+ src[idx(x - 1, y + 1, width, height)] + src[idx(x, y + 1, width, height)] + src[idx(x + 1, y + 1, width, height)]
+			: 2;
 		break;
 	}
 
@@ -86,8 +88,8 @@ cudaProcess(unsigned int *g_odata, int *dst, int *src, int width, int height, in
 }
 
 extern "C" void
-launch_cudaProcess(dim3 grid, dim3 block, int sbytes, unsigned int *g_odata, int *d_dst, int *d_src, int WIDTH, int HEIGHT, int mouse_buttons, int mouse_x, int mouse_y)
+launch_cudaProcess(dim3 grid, dim3 block, int sbytes, unsigned int *g_odata, int *d_dst, int *d_src, int WIDTH, int HEIGHT, int mouse_buttons, int mouse_x, int mouse_y, bool is_running)
 {
-    cudaProcess<<< grid, block, sbytes >>>(g_odata, d_dst, d_src, WIDTH, HEIGHT, mouse_buttons, mouse_x, mouse_y);
+    cudaProcess<<< grid, block, sbytes >>>(g_odata, d_dst, d_src, WIDTH, HEIGHT, mouse_buttons, mouse_x, mouse_y, is_running);
 }
 

@@ -76,6 +76,9 @@ int k = 0;
 int mouse_x, mouse_y;
 int mouse_buttons = 0;
 
+bool is_running = true;
+bool is_single_step = false;
+
 // pbo and fbo variables
 #ifdef USE_TEXSUBIMAGE2D
 GLuint pbo_dest;
@@ -124,7 +127,7 @@ GLuint shDraw;
 
 ////////////////////////////////////////////////////////////////////////////////
 extern "C" void
-launch_cudaProcess(dim3 grid, dim3 block, int sbytes, unsigned int *g_odata, int *dst, int *src, int imgw, int imgh, int mouse_buttons, int mouse_x, int mouse_y);
+launch_cudaProcess(dim3 grid, dim3 block, int sbytes, unsigned int *g_odata, int *dst, int *src, int imgw, int imgh, int mouse_buttons, int mouse_x, int mouse_y, bool is_running);
 
 // Forward declarations
 void runStdProgram(int argc, char **argv);
@@ -251,7 +254,9 @@ void generateCUDAImage()
 	dim3 grid(image_width / block.x, image_height / block.y, 1);
 	// execute CUDA kernel
 	k = 1 - k;
-	launch_cudaProcess(grid, block, 0, out_data, d_dst[k], d_dst[1 - k], image_width, image_height, mouse_buttons, mouse_x, mouse_y);
+	launch_cudaProcess(grid, block, 0, out_data, d_dst[k], d_dst[1 - k], image_width, image_height, mouse_buttons, mouse_x, mouse_y, is_running);
+	if (is_single_step)
+		is_running = false;
 
 	// CUDA generated data in cuda memory or in a mapped PBO made of BGRA 8 bits
 	// 2 solutions, here :
@@ -407,28 +412,36 @@ void timerEvent(int value)
 void
 keyboard(unsigned char key, int /*x*/, int /*y*/)
 {
-    switch (key)
-    {
-        case (27) :
-            Cleanup(EXIT_SUCCESS);
-            break;
+    switch (key) {
+		case 'p':
+			is_running = !is_running;
+			is_single_step = false;
+			break;
 
-        case ' ':
-            enable_cuda ^= 1;
+		case 's':
+			is_running = true;
+			is_single_step = true;
+			break;
+
+		case (27) :
+			Cleanup(EXIT_SUCCESS);
+			break;
+
+		case ' ':
+			enable_cuda ^= 1;
 #ifdef USE_TEXTURE_RGBA8UI
 
-            if (enable_cuda)
-            {
-                glClearColorIuiEXT(128,128,128,255);
-            }
-            else
-            {
-                glClearColor(0.5, 0.5, 0.5, 1.0);
-            }
+			if (enable_cuda)
+			{
+				glClearColorIuiEXT(128,128,128,255);
+			}
+			else
+			{
+				glClearColor(0.5, 0.5, 0.5, 1.0);
+			}
 
 #endif
-            break;
-
+			break;
     }
 }
 
