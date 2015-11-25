@@ -72,7 +72,7 @@ int* d_dst[2];
 int k = 0;
 
 // mouse controls
-int mouse_old_x, mouse_old_y;
+int mouse_x, mouse_y;
 int mouse_buttons = 0;
 
 // pbo and fbo variables
@@ -250,7 +250,7 @@ void generateCUDAImage()
 	dim3 grid(image_width / block.x, image_height / block.y, 1);
 	// execute CUDA kernel
 	k = 1 - k;
-	launch_cudaProcess(grid, block, 0, out_data, d_dst[k], d_dst[1 - k], image_width, image_height, mouse_buttons, mouse_old_x, mouse_old_y);
+	launch_cudaProcess(grid, block, 0, out_data, d_dst[k], d_dst[1 - k], image_width, image_height, mouse_buttons, mouse_x, mouse_y);
 
 	// CUDA generated data in cuda memory or in a mapped PBO made of BGRA 8 bits
 	// 2 solutions, here :
@@ -436,8 +436,8 @@ keyboard(unsigned char key, int /*x*/, int /*y*/)
 ////////////////////////////////////////////////////////////////////////////////
 void motion(int x, int y)
 {
-	mouse_old_x = (int)((float)image_width * ((float)x / (float)window_width));
-	mouse_old_y = (int)((float)image_height * ((float)(window_height - y) / (float)window_height));
+	mouse_x = (int)((float)image_width * ((float)x / (float)window_width));
+	mouse_y = (int)((float)image_height * ((float)(window_height - y) / (float)window_height));
 }
 
 void mouse(int button, int state, int x, int y)
