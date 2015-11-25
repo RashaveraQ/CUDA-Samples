@@ -62,8 +62,9 @@ CheckRender *g_CheckRender = NULL;
 // constants / global variables
 unsigned int window_width = 1000;
 unsigned int window_height = 1000;
-unsigned int image_width = 512;
-unsigned int image_height = 512;
+unsigned int image_width = 512;		// must be 16 times for circulated field 
+unsigned int image_height = 512;	// 
+
 int iGLUTWindowHandle = 0;          // handle to the GLUT window
 
 unsigned int mem_size;
