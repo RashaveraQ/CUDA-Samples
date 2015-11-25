@@ -406,6 +406,13 @@ void timerEvent(int value)
     glutTimerFunc(REFRESH_DELAY, timerEvent, 0);
 }
 
+int idx(unsigned int x, unsigned int y)
+{
+	x = (x < 0) ? (image_width - 1) : (image_width <= x) ? 0 : x;
+	y = (y < 0) ? (image_height - 1) : (image_height <= y) ? 0 : y;
+	return y * image_width + x;
+}
+
 ////////////////////////////////////////////////////////////////////////////////
 //! Keyboard events handler
 ////////////////////////////////////////////////////////////////////////////////
@@ -438,6 +445,16 @@ keyboard(unsigned char key, int /*x*/, int /*y*/)
 					dst[y * image_width + x] = (rand() % 3) ? 0 : 1;
 				}
 			}
+			cudaMemcpy(d_dst[k], dst, mem_size, cudaMemcpyHostToDevice);
+			break;
+
+		case 'g':	// glider
+			cudaMemcpy(dst, d_dst[k], mem_size, cudaMemcpyDeviceToHost);
+			dst[idx(mouse_x,     mouse_y    )] = 1;
+			dst[idx(mouse_x + 1, mouse_y    )] = 1;
+			dst[idx(mouse_x + 2, mouse_y    )] = 1;
+			dst[idx(mouse_x,     mouse_y + 1)] = 1;
+			dst[idx(mouse_x + 1, mouse_y + 2)] = 1;
 			cudaMemcpy(d_dst[k], dst, mem_size, cudaMemcpyHostToDevice);
 			break;
 
@@ -749,10 +766,6 @@ runStdProgram(int argc, char **argv)
 	cudaMalloc((void**)&d_dst[1], mem_size);
 
 	keyboard('r',0,0);
-
-	// グライダー
-	//int offset = 10 * image_width + 20;
-	//dst[offset + 0] = dst[offset + 1] = dst[offset + 2] = dst[offset + image_width] = dst[offset + 2 * image_width + 1] = 1;
 
     // First initialize OpenGL context, so we can properly set the GL for CUDA.
     // This is necessary in order to achieve optimal performance with OpenGL/CUDA interop.
