@@ -418,16 +418,34 @@ keyboard(unsigned char key, int /*x*/, int /*y*/)
 			is_single_step = false;
 			break;
 
-		case 's':
+		case ' ':
 			is_running = true;
 			is_single_step = true;
+			break;
+
+		case 'c':
+			for (unsigned int x = 0; x < image_width; x++) {
+				for (unsigned int y = 0; y < image_height; y++) {
+					dst[y * image_width + x] = 0;
+				}
+			}
+			cudaMemcpy(d_dst[k], dst, mem_size, cudaMemcpyHostToDevice);
+			break;
+
+		case 'r':
+			for (unsigned int x = 0; x < image_width; x++) {
+				for (unsigned int y = 0; y < image_height; y++) {
+					dst[y * image_width + x] = (rand() % 3) ? 0 : 1;
+				}
+			}
+			cudaMemcpy(d_dst[k], dst, mem_size, cudaMemcpyHostToDevice);
 			break;
 
 		case (27) :
 			Cleanup(EXIT_SUCCESS);
 			break;
 
-		case ' ':
+		case 'E':
 			enable_cuda ^= 1;
 #ifdef USE_TEXTURE_RGBA8UI
 
@@ -727,20 +745,14 @@ runStdProgram(int argc, char **argv)
 
 	mem_size = image_width * image_height * sizeof(int);
 	dst = (int*)malloc(mem_size);
-	for (unsigned int x = 0; x < image_width; x++) {
-		for (unsigned int y = 0; y < image_height; y++) {
-			dst[y * image_width + x] = (rand() % 3) ? 0 : 1;
-		}
-	}
+	cudaMalloc((void**)&d_dst[0], mem_size);
+	cudaMalloc((void**)&d_dst[1], mem_size);
+
+	keyboard('r',0,0);
 
 	// グライダー
 	//int offset = 10 * image_width + 20;
 	//dst[offset + 0] = dst[offset + 1] = dst[offset + 2] = dst[offset + image_width] = dst[offset + 2 * image_width + 1] = 1;
-
-	cudaMalloc((void**)&d_dst[0], mem_size);
-	cudaMalloc((void**)&d_dst[1], mem_size);
-	cudaMemcpy(d_dst[0], dst, mem_size, cudaMemcpyHostToDevice);
-	cudaMemcpy(d_dst[1], dst, mem_size, cudaMemcpyHostToDevice);
 
     // First initialize OpenGL context, so we can properly set the GL for CUDA.
     // This is necessary in order to achieve optimal performance with OpenGL/CUDA interop.
