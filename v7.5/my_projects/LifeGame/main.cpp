@@ -97,7 +97,6 @@ unsigned int num_texels;
 unsigned int num_values;
 
 // (offscreen) render target fbo variables
-GLuint tex_screen;      // where we render the image
 GLuint tex_cudaResult;  // where we will copy the CUDA result
 
 char *ref_file       = NULL;
@@ -611,7 +610,6 @@ void FreeResource()
 #else
     cudaFree(cuda_dest_resource);
 #endif
-    deleteTexture(&tex_screen);
     deleteTexture(&tex_cudaResult);
 
     // cudaDeviceReset causes the driver to clean up all state. While
